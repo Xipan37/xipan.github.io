@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>梦角传讯</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="app-header">
+      <div id="header-left">
+        <span id="header-avatar" class="avatar-small" title="双击拍一拍"></span>
+        <div id="header-info">
+          <span id="header-name"></span>
+          <span id="header-mood-status" class="header-mood"></span>
+        </div>
+      </div>
+      <div id="header-center">
+        <button id="btn-call" class="icon-btn" title="打电话">📞</button>
+        <button id="btn-video-call" class="icon-btn" title="视频通话">📹</button>
+        <button id="btn-mood-journal" class="icon-btn" title="心情手账">📖</button>
+        <button id="btn-favorites" class="icon-btn" title="收藏">⭐</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Chat View -->
+      <div id="view-chat" class="view active">
+        <div id="message-list"></div>
+        <div id="chat-input-area">
+          <div id="chat-input-wrapper">
+            <button id="btn-emoji-picker" class="icon-btn" title="选择表情">😊</button>
+            <button id="btn-img-upload" class="icon-btn" title="发送图片">🖼️</button>
+            <input type="file" id="chat-img-input" accept="image/*" hidden>
+            <input type="text" id="chat-input" placeholder="输入消息..." autocomplete="off">
+            <button id="btn-send" class="icon-btn send-btn" title="发送">➤</button>
+          </div>
+          <div id="chat-options">
+            <label class="toggle-label" title="拼字卡模式：将多个字卡组合发送">
+              <input type="checkbox" id="toggle-combine">
+              <span class="toggle-text">拼字卡</span>
+            </label>
+            <span id="reply-indicator" class="reply-indicator"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards View -->
+      <div id="view-cards" class="view">
+        <div class="view-tabs">
+          <button class="view-tab active" data-tab="cards-tab-cards">字卡库</button>
+          <button class="view-tab" data-tab="cards-tab-emojis">表情包</button>
+        </div>
+
+        <div id="cards-tab-cards" class="tab-content active">
+          <div class="tab-actions">
+            <button id="btn-add-card" class="btn-primary">+ 添加字卡</button>
+            <button id="btn-batch-import" class="btn-secondary">批量导入</button>
+            <button id="btn-manage-groups" class="btn-secondary">管理分组</button>
+            <button id="btn-card-batch-mode" class="btn-secondary">批量管理</button>
+          </div>
+          <div id="card-search-bar" style="display:flex;gap:6px;padding:4px 0 8px;">
+            <input type="text" id="card-search-input" class="settings-input" placeholder="搜索字卡..." style="flex:1;">
+            <select id="card-group-filter" class="settings-input" style="width:auto;max-width:140px;">
+              <option value="">全部分组</option>
+            </select>
+          </div>
+          <div id="card-batch-actions" class="hidden batch-actions">
+            <span id="card-selected-count">已选 0 项</span>
+            <button id="btn-card-batch-delete" class="btn-danger btn-small">删除选中</button>
+            <button id="btn-card-batch-select-all" class="btn-small">全选</button>
+            <button id="btn-card-batch-clear" class="btn-small">取消选择</button>
+            <button id="btn-card-batch-exit" class="btn-small">退出批量</button>
+          </div>
+          <div id="card-list" class="item-list"></div>
+        </div>
+
+        <div id="cards-tab-emojis" class="tab-content">
+          <div class="tab-actions">
+            <button id="btn-add-emoji" class="btn-primary">+ 添加表情</button>
+            <button id="btn-emoji-batch-add" class="btn-secondary">批量添加图片</button>
+            <input type="file" id="emoji-batch-img-input" accept="image/*" multiple hidden>
+            <button id="btn-emoji-batch-mode" class="btn-secondary">批量管理</button>
+          </div>
+          <div id="emoji-batch-actions" class="hidden batch-actions">
+            <span id="emoji-selected-count">已选 0 项</span>
+            <button id="btn-emoji-batch-delete" class="btn-danger btn-small">删除选中</button>
+            <button id="btn-emoji-batch-select-all" class="btn-small">全选</button>
+            <button id="btn-emoji-batch-clear" class="btn-small">取消选择</button>
+            <button id="btn-emoji-batch-exit" class="btn-small">退出批量</button>
+          </div>
+          <div id="emoji-list" class="emoji-grid"></div>
+        </div>
+
+      </div>
+
+      <!-- Letters View -->
+      <div id="view-letters" class="view">
+        <div class="view-tabs">
+          <button class="view-tab active" data-tab="letters-tab-inbox">收件箱</button>
+          <button class="view-tab" data-tab="letters-tab-outbox">发件箱</button>
+        </div>
+        <div class="tab-actions">
+          <button id="btn-write-letter" class="btn-primary">✎ 写信</button>
+        </div>
+        <div id="letters-tab-inbox" class="tab-content active">
+          <div id="inbox-list" class="item-list"></div>
+        </div>
+        <div id="letters-tab-outbox" class="tab-content">
+          <div id="outbox-list" class="item-list"></div>
+        </div>
+      </div>
+
+      <!-- Settings View -->
+      <div id="view-settings" class="view">
+        <div class="settings-section">
+          <h3>我的信息</h3>
+          <div class="settings-row">
+            <label>头像</label>
+            <div class="avatar-edit">
+              <span id="settings-user-avatar" class="avatar-medium"></span>
+              <button id="btn-change-user-avatar" class="btn-small">更换</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <label>昵称</label>
+            <input type="text" id="settings-user-name" class="settings-input">
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>梦角信息</h3>
+          <div class="settings-row">
+            <label>头像</label>
+            <div class="avatar-edit">
+              <span id="settings-character-avatar" class="avatar-medium"></span>
+              <button id="btn-change-character-avatar" class="btn-small">更换</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <label>昵称</label>
+            <input type="text" id="settings-character-name" class="settings-input">
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>回复设置</h3>
+          <div class="settings-row">
+            <label>回复间隔</label>
+            <div class="slider-group">
+              <input type="range" id="settings-reply-min" min="3" max="300" value="3">
+              <span id="settings-reply-min-label">3秒</span>
+              <span class="slider-sep">~</span>
+              <input type="range" id="settings-reply-max" min="3" max="300" value="300">
+              <span id="settings-reply-max-label">5分钟</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <label>自动消息</label>
+            <label class="switch">
+              <input type="checkbox" id="settings-auto-msg">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <div class="settings-row" id="settings-auto-interval-row">
+            <label>自动间隔</label>
+            <div class="slider-group">
+              <input type="range" id="settings-auto-interval" min="30" max="1800" value="600">
+              <span id="settings-auto-interval-label">10分钟</span>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>回复设置</h3>
+          <div class="settings-row">
+            <label>自动回复</label>
+            <label class="switch">
+              <input type="checkbox" id="settings-auto-reply" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <p class="hint-text">关闭后对方不会主动回复消息（但自动消息和信件仍会发送）</p>
+        </div>
+        <div class="settings-section">
+          <h3>主动写信</h3>
+          <div class="settings-row">
+            <label>写信间隔</label>
+            <div class="slider-group">
+              <input type="range" id="settings-letter-interval" min="1" max="24" value="4">
+              <span id="settings-letter-interval-label">4小时</span>
+            </div>
+          </div>
+          <p class="hint-text">梦角主动写信的间隔（1~24小时），不超过设置的最长时间</p>
+        </div>
+        <div class="settings-section">
+          <h3>拍一拍</h3>
+          <div class="settings-row">
+            <button id="btn-open-atmosphere" class="btn-secondary">管理拍一拍语</button>
+          </div>
+          <p class="hint-text">拍一拍时显示的提示内容，可使用 {char} 代表梦角名，{user} 代表你</p>
+        </div>
+        <div class="settings-section">
+          <h3>对方状态</h3>
+          <div class="settings-row">
+            <button id="btn-open-status-phrases" class="btn-secondary">管理状态语</button>
+          </div>
+          <p class="hint-text">头像下方显示的状态内容，随机展示。可使用 {char} {user}</p>
+        </div>
+        <div class="settings-section">
+          <h3>拼字卡</h3>
+          <div class="settings-row">
+            <label>开启拼字卡</label>
+            <label class="switch">
+              <input type="checkbox" id="settings-combine">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <div class="settings-row" id="settings-combine-count-row">
+            <label>拼接句数</label>
+            <div class="slider-group">
+              <input type="range" id="settings-combine-count" min="1" max="10" value="3">
+              <span id="settings-combine-count-label">3句</span>
+            </div>
+          </div>
+          <p class="hint-text">开启后，系统回复时将随机从字卡库和汉字库取字拼接合并发送</p>
+        </div>
+        <div class="settings-section">
+          <h3>外观</h3>
+          <div class="settings-row">
+            <label>主题色</label>
+            <input type="color" id="settings-theme-color" class="color-picker" value="#d48bb5">
+          </div>
+          <div class="settings-row">
+            <label>我的气泡</label>
+            <input type="color" id="settings-user-bubble" class="color-picker" value="#d48bb5">
+          </div>
+          <div class="settings-row">
+            <label>梦角气泡</label>
+            <input type="color" id="settings-char-bubble" class="color-picker" value="#f0e6ee">
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>聊天背景</h3>
+          <div class="settings-row">
+            <label>背景类型</label>
+            <div style="display:flex;gap:12px;font-size:13px;">
+              <label><input type="radio" name="chat-bg-type" id="settings-chat-bg-type-color" checked> 颜色</label>
+              <label><input type="radio" name="chat-bg-type" id="settings-chat-bg-type-image"> 图片/GIF</label>
+            </div>
+          </div>
+          <div class="settings-row" id="settings-chat-bg-color-row">
+            <label>背景色</label>
+            <input type="color" id="settings-chat-bg-color" class="color-picker" value="#faf5f8">
+          </div>
+          <div class="settings-row" id="settings-chat-bg-file-row" style="display:none;">
+            <button id="btn-chat-bg-upload" class="btn-secondary">上传背景图</button>
+            <button id="btn-chat-bg-clear" class="btn-small">清除背景</button>
+            <input type="file" id="chat-bg-file-input" accept="image/*" hidden>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>字体</h3>
+          <div class="settings-row">
+            <label>字体大小</label>
+            <div class="slider-group">
+              <input type="range" id="settings-font-size" min="12" max="24" value="15">
+              <span id="settings-font-size-label">15px</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <label>跟随系统</label>
+            <label class="switch">
+              <input type="checkbox" id="settings-use-system-font">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <p class="hint-text">开启后字体将跟随系统设置，关闭则使用自定义字体</p>
+        </div>
+        <div class="settings-section">
+          <h3>数据管理</h3>
+          <div class="settings-row">
+            <button id="btn-export-data" class="btn-secondary">导出数据</button>
+            <button id="btn-import-data" class="btn-secondary">导入数据</button>
+            <button id="btn-clear-data" class="btn-danger">清空所有数据</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav id="bottom-nav">
+      <button class="nav-item active" data-tab="chat">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">对话</span>
+      </button>
+      <button class="nav-item" data-tab="cards">
+        <span class="nav-icon">🃏</span>
+        <span class="nav-label">字卡</span>
+      </button>
+      <button class="nav-item" data-tab="letters">
+        <span class="nav-icon">✉️</span>
+        <span class="nav-label">信件</span>
+        <span id="letter-badge" class="badge hidden">0</span>
+      </button>
+      <button class="nav-item" data-tab="settings">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">设置</span>
+      </button>
+    </nav>
+
+    <!-- Emoji Picker Modal -->
+    <div id="emoji-picker-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-bottom">
+        <div class="modal-header">
+          <span>选择表情</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div id="emoji-grid-picker" class="emoji-grid"></div>
+      </div>
+    </div>
+
+    <!-- Add Card Modal -->
+    <div id="add-card-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>添加字卡</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <textarea id="add-card-input" class="modal-textarea" placeholder="输入字卡内容..." rows="3"></textarea>
+        <input type="text" id="add-card-group-input" class="modal-input" placeholder="分组（可选）" maxlength="30" style="margin-top:6px;">
+        <button id="add-card-confirm" class="btn-primary modal-btn">确认添加</button>
+      </div>
+    </div>
+
+    <!-- Edit Card Modal -->
+    <div id="edit-card-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>编辑字卡</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <textarea id="edit-card-input" class="modal-textarea" rows="3"></textarea>
+        <input type="text" id="edit-card-group-input" class="modal-input" placeholder="分组（可选）" maxlength="30" style="margin-top:6px;">
+        <button id="edit-card-confirm" class="btn-primary modal-btn">保存</button>
+      </div>
+    </div>
+
+    <!-- Batch Import Modal -->
+    <div id="batch-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>批量导入</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <p class="hint-text">每行一条，系统将自动去重</p>
+        <textarea id="batch-input" class="modal-textarea" placeholder="每行一条字卡内容..." rows="8"></textarea>
+        <input type="text" id="batch-group-input" class="modal-input" placeholder="分组（可选）" maxlength="30" style="margin-top:6px;">
+        <button id="batch-confirm" class="btn-primary modal-btn">导入</button>
+      </div>
+    </div>
+
+    <!-- Add Emoji Modal -->
+    <div id="add-emoji-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>添加表情</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <input type="text" id="add-emoji-input" class="modal-input" placeholder="输入表情文字或符号..." maxlength="50">
+        <div style="margin:12px 0;display:flex;align-items:center;gap:8px;">
+          <button id="btn-emoji-upload-img" class="btn-secondary">上传图片表情</button>
+          <input type="file" id="emoji-img-input" accept="image/*" hidden>
+        </div>
+        <div id="add-emoji-preview" class="hidden" style="text-align:center;margin-bottom:8px;"></div>
+        <button id="add-emoji-confirm" class="btn-primary modal-btn">确认添加</button>
+      </div>
+    </div>
+
+    <!-- Avatar Picker Modal -->
+    <div id="avatar-picker-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>选择头像</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="avatar-upload-row">
+          <button id="btn-upload-avatar" class="btn-secondary">上传图片</button>
+          <input type="file" id="avatar-file-input" accept="image/*" hidden>
+        </div>
+        <p class="hint-text">或选择表情符号</p>
+        <div id="avatar-emoji-picker" class="emoji-grid"></div>
+      </div>
+    </div>
+
+    <!-- Write Letter Modal -->
+    <div id="write-letter-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <span>写信给 <span id="write-letter-recipient">梦角</span></span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <textarea id="letter-content-input" class="modal-textarea" placeholder="写下你想说的话..." rows="12"></textarea>
+        <button id="send-letter-confirm" class="btn-primary modal-btn">寄出信件</button>
+      </div>
+    </div>
+
+    <!-- Letter Detail Modal -->
+    <div id="letter-detail-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <span id="letter-detail-title">信件详情</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div id="letter-detail-content" class="letter-detail">
+          <div class="letter-meta">
+            <span id="letter-detail-sender"></span>
+            <span id="letter-detail-time"></span>
+          </div>
+          <div id="letter-detail-body" class="letter-body"></div>
+        </div>
+        <div id="letter-detail-reply" class="letter-reply-area hidden">
+          <hr>
+          <h4>回复：</h4>
+          <div id="letter-detail-reply-body" class="letter-body"></div>
+          <div class="letter-meta">
+            <span id="letter-detail-reply-time"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Call Modal -->
+    <div id="call-modal" class="modal hidden call-modal">
+      <div class="call-backdrop"></div>
+      <div class="call-content" id="call-content">
+        <div id="call-avatar-area" class="call-avatar-area">
+          <span id="call-avatar-display" class="call-avatar"></span>
+          <div id="call-name-display" class="call-name"></div>
+          <div id="call-status-display" class="call-status">呼叫中...</div>
+          <div id="call-timer" class="call-timer hidden">00:00</div>
+        </div>
+        <div class="call-controls">
+          <button id="call-btn-mute" class="call-btn" title="静音">🔇</button>
+          <button id="call-btn-end" class="call-btn call-btn-end" title="挂断">📞</button>
+          <button id="call-btn-speaker" class="call-btn" title="扬声器">🔊</button>
+        </div>
+        <div class="call-extra-controls hidden" id="call-extra-controls">
+          <button id="call-btn-minimize" class="call-btn-sm" title="最小化">⤓</button>
+          <button id="call-btn-zoom-in" class="call-btn-sm" title="放大">🔍+</button>
+          <button id="call-btn-zoom-out" class="call-btn-sm" title="缩小">🔍−</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mood Journal Modal -->
+    <div id="mood-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <span>📖 心情手账</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div id="mood-current">
+          <p class="hint-text">梦角的今日心情</p>
+          <div id="mood-emoji-picker" class="emoji-grid" style="max-height:200px;overflow-y:auto;"></div>
+          <div style="margin:12px 0;font-size:13px;color:var(--text-secondary);">状态描述：</div>
+          <div id="mood-status-text" style="padding:8px 12px;background:var(--bg);border-radius:8px;font-size:14px;margin-bottom:12px;"></div>
+          <button id="btn-save-mood" class="btn-primary modal-btn">记录今日心情</button>
+          <hr style="margin:16px 0;border-color:var(--border);">
+        </div>
+        <div id="mood-calendar-wrap" style="margin-bottom:12px;">
+          <div id="mood-calendar-nav" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <button id="cal-prev" class="btn-small">‹</button>
+            <span id="cal-title" style="font-weight:600;font-size:14px;"></span>
+            <button id="cal-next" class="btn-small">›</button>
+          </div>
+          <div id="mood-calendar" class="mood-calendar"></div>
+        </div>
+        <div id="mood-history">
+          <h4 style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">详细记录</h4>
+          <div id="mood-history-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Favorites Modal -->
+    <div id="favorites-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <span>⭐ 收藏的消息</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div id="favorites-list"></div>
+      </div>
+    </div>
+
+    <!-- Atmosphere Phrases Modal -->
+    <div id="atmosphere-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>🎭 氛围感设置</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <p class="hint-text">这些内容将用于拍一拍提示和状态后缀，随机显示</p>
+        <div class="tab-actions" style="padding:0 0 8px;">
+          <button id="btn-add-atmosphere" class="btn-primary">+ 添加氛围语</button>
+          <button id="btn-batch-atmosphere" class="btn-secondary">批量导入</button>
+        </div>
+        <div id="atmosphere-list" class="item-list"></div>
+      </div>
+    </div>
+
+    <!-- Incoming Call Overlay -->
+    <div id="incoming-call-overlay" class="hidden incoming-call-overlay">
+      <div class="incoming-backdrop"></div>
+      <div class="incoming-content">
+        <div class="incoming-avatar-wrap">
+          <span id="incoming-call-avatar" class="incoming-avatar"></span>
+        </div>
+        <div id="incoming-call-name" class="incoming-name"></div>
+        <div id="incoming-call-type" class="incoming-call-type">来电...</div>
+        <div class="incoming-controls">
+          <button id="incoming-call-decline" class="incoming-btn incoming-btn-decline">✕</button>
+          <button id="incoming-call-accept" class="incoming-btn incoming-btn-accept">📞</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group Management Modal -->
+    <div id="group-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>管理分组</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div id="group-list" class="item-list"></div>
+      </div>
+    </div>
+
+    <!-- Poke Animation -->
+    <div id="poke-overlay" class="poke-overlay hidden">
+      <div id="poke-text"></div>
+    </div>
+
+    <!-- Add Atmosphere Modal -->
+    <div id="add-atmosphere-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>添加氛围语</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <input type="text" id="add-atmosphere-input" class="modal-input" placeholder="输入氛围语..." maxlength="100">
+        <button id="add-atmosphere-confirm" class="btn-primary modal-btn">确认添加</button>
+      </div>
+    </div>
+
+    <!-- Batch Atmosphere Modal -->
+    <div id="batch-atmosphere-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>批量导入氛围语</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <p class="hint-text">每行一条，自动去重</p>
+        <textarea id="batch-atmosphere-input" class="modal-textarea" placeholder="每行一条氛围语..." rows="6"></textarea>
+        <button id="batch-atmosphere-confirm" class="btn-primary modal-btn">导入</button>
+      </div>
+    </div>
+
+    <!-- Status Phrases Modal -->
+    <div id="status-phrases-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>管理状态语</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <p class="hint-text">状态语用于头像下方显示，随机展示。可使用 {char} {user}</p>
+        <div class="tab-actions" style="padding:0 0 8px;">
+          <button id="btn-add-status-phrase" class="btn-primary">+ 添加状态语</button>
+          <button id="btn-batch-status-phrases" class="btn-secondary">批量导入</button>
+        </div>
+        <div id="status-phrases-list" class="item-list"></div>
+      </div>
+    </div>
+
+    <!-- Add Status Phrase Modal -->
+    <div id="add-status-phrase-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>添加状态语</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <input type="text" id="add-status-phrase-input" class="modal-input" placeholder="输入状态语..." maxlength="100">
+        <button id="add-status-phrase-confirm" class="btn-primary modal-btn">确认添加</button>
+      </div>
+    </div>
+
+    <!-- Batch Status Phrases Modal -->
+    <div id="batch-status-phrases-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>批量导入状态语</span>
+          <button class="modal-close">&times;</button>
+        </div>
+        <p class="hint-text">每行一条，自动去重</p>
+        <textarea id="batch-status-phrases-input" class="modal-textarea" placeholder="每行一条状态语..." rows="6"></textarea>
+        <button id="batch-status-phrases-confirm" class="btn-primary modal-btn">导入</button>
+      </div>
+    </div>
+
+    <!-- Confirm Dialog -->
+    <div id="confirm-dialog" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <span id="confirm-title">确认</span>
+        </div>
+        <p id="confirm-message" class="confirm-message"></p>
+        <div class="confirm-actions">
+          <button id="confirm-cancel" class="btn-secondary">取消</button>
+          <button id="confirm-ok" class="btn-danger">确认</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

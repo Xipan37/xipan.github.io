@@ -1,0 +1,14 @@
+{
+  "name": "character-card-communicator",
+  "version": "1.0.0",
+  "description": "梦女与梦角沟通字卡传讯网站",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "socket.io": "^4.7.5",
+    "better-sqlite3": "^11.3.0"
+  }
+}
